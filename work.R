@@ -36,3 +36,9 @@ max_density <- paste(max_rowname, max_colname, sep=" ")
 min_colname <- colnames(smoking_density)[apply(smoking_density, 2, function(u) any(u==min(smoking_density)))]
 min_rowname <- row.names(smoking_density)[apply(smoking_density, 1, function(u) any(u==min(smoking_density)))]
 min_density <- paste(min_rowname, min_colname, sep=" ")
+
+# Users classified number of smoking cigarettes intervals, by smoking history time (smokers tend to smoke the most in 
+# what time interval, to use the cheat mode in what time interval, etc.)
+Day_intervals <- count(df$DayIntervals)
+mode_density <- table(df$TypeFactor, df$DayIntervals)
+
