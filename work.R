@@ -1,3 +1,5 @@
 library(openxlsx)
 df = read.xlsx("userdata.xlsx")
 df$Type <- as.factor(df$Type)
+df$User <- as.factor(df$User)
+df$Time <- as.POSIXct(df$Time*(60*60*24), origin="1899-12-30", tz="GMT")
