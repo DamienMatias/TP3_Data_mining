@@ -1,6 +1,3 @@
-install.packages("dplyr")
-install.packages("plyr")
-
 library(dplyr)
 library(openxlsx)
 library(plyr) 
@@ -37,14 +34,14 @@ stat.mode(df$Type)
 #question percentage of improvement
 df_without_friend_mode=df_without_hour[FALSE,]
 df_without_friend_mode$Time <- as.Date(df_without_friend_mode$Time)
-nrow(df_without_friend_mode) ##65006
 for (i in 1 : nrow(df_without_hour) ){
   if (df[i,2]!='Friend'){
     df_without_friend_mode=rbind(df_without_friend_mode,df_without_hour[i,])
   }
 }
-df_without_friend_mode[1:10,] #index : 1,2,3 ...
+nrow(df_without_friend_mode) ##65006
 
+rownames(df_without_friend_mode) <- 1:nrow(df_without_friend_mode)  #index : 1,2,3 ...
 
 #observation_week = df_without_friend_mode[FALSE,]
 #week1 = df_without_friend_mode[FALSE,]
@@ -71,7 +68,6 @@ user_id=as.numeric(rownames(userid))
 user_id[2]
 user_id
 
-rownames(df_without_friend_mode) <- 1:nrow(df_without_friend_mode)
 nrow(df_without_friend_mode)
 
 
@@ -84,11 +80,10 @@ ddply(min_date, .(User), head, n = 1)
 
 
 question=setNames(data.frame(matrix(ncol = 3, nrow = nbuser)), c("Week_observation", "Week1", "Week2"))
-question[1,2]=question[1,2]+1
 for (i in 1:3) question[i]=0
 
 for (j in 1:nbuser){
-  if (df_without_hour$Type !='Friend'){
+  
   for (i in user_id[j] :user_id[j+1]){
     if (df_without_hour$Type[i]=='Observation week'){
       question$Week_observation[j]=question$Week_observation[j]+1
@@ -105,7 +100,7 @@ for (j in 1:nbuser){
       question$Week2[j]=question$Week2[j]+1
       }
   }
-  }
+  
   
   
 }
