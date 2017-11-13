@@ -1,5 +1,9 @@
-install.packages("data.table", type="source", dependencies=TRUE)
+install.packages("dplyr")
+install.packages("plyr")
+
+library(dplyr)
 library(openxlsx)
+library(plyr) 
 df = read.xlsx("userdata.xlsx")
 df$Type <- as.factor(df$Type)
 df$User <- as.factor(df$User)
@@ -33,58 +37,79 @@ stat.mode(df$Type)
 #question percentage of improvement
 df_without_friend_mode=df_without_hour[FALSE,]
 df_without_friend_mode$Time <- as.Date(df_without_friend_mode$Time)
+nrow(df_without_friend_mode) ##65006
 for (i in 1 : nrow(df_without_hour) ){
   if (df[i,2]!='Friend'){
     df_without_friend_mode=rbind(df_without_friend_mode,df_without_hour[i,])
   }
 }
-observation_week = df_without_friend_mode[FALSE,]
-week1 = df_without_friend_mode[FALSE,]
-week2 = df_without_friend_mode[FALSE,]
-for (i in 1 : nrow(df_without_friend_mode) ){
-  if (round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
-                                   units = c("days"))) ,0) <= 7.0 ){
-    week1=rbind(week1,df_without_friend_mode[i,])
-  }
-  else if ((round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  ,
-                                units = c("days")))  ,0) >= 8.0)
-           &&(round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
-                                  units = c("days"))),0) < 15.0) )
-    week2=rbind(week2,df_without_friend_mode[i,])
-  if (df_without_friend_mode[i,2]=='Observation week' )
-    observation_week=rbind(observation_week,df_without_friend_mode[i,])
-}
-nrow(observation_week)
-nrow(week1)
-nrow(week2)
-table(week1$Type)
-table(week2$Type)
+df_without_friend_mode[1:10,] #index : 1,2,3 ...
 
-df_without_friend_mode$Time <- as.Date(df_without_friend_mode$Time)
-min(df_without_friend_mode$Time)<"2017-06-06 GMT"
 
-for (i in 1:15) print (df[i,2])
+#observation_week = df_without_friend_mode[FALSE,]
+#week1 = df_without_friend_mode[FALSE,]
+#week2 = df_without_friend_mode[FALSE,]
+#for (i in 1 : nrow(df_without_friend_mode) ){
+#  if (round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
+#                                   units = c("days"))) ,0) <= 7.0 ){
+#    week1=rbind(week1,df_without_friend_mode[i,])
+#  }
+#  else if ((round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  ,
+#                                units = c("days")))  ,0) >= 8.0)
+#           &&(round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
+#                                  units = c("days"))),0) < 15.0) )
+#    week2=rbind(week2,df_without_friend_mode[i,])
+#  if (df_without_friend_mode[i,2]=='Observation week' )
+#    observation_week=rbind(observation_week,df_without_friend_mode[i,])
+#}
 
-nbuser=nrow(unique(df[1])) #number of user
+
+nbuser=nrow(unique(df_without_friend_mode[1])) #number of user = 32
+userid=unique(df_without_friend_mode[1]) ##the first new row id for each new us
 nbuser
-userid=unique(df[1])
-userid[1]
 user_id=as.numeric(rownames(userid))
 user_id[2]
+user_id
+
+rownames(df_without_friend_mode) <- 1:nrow(df_without_friend_mode)
+nrow(df_without_friend_mode)
+
+
+min_date=unique(df_without_friend_mode %>% group_by(User) %>% top_n(-1, Time))
+min_date$Type=NULL
+max(df_without_friend_mode$Time)
+
+ddply(min_date, .(User), head, n = 1) 
+
+
 
 question=setNames(data.frame(matrix(ncol = 3, nrow = nbuser)), c("Week_observation", "Week1", "Week2"))
 question[1,2]=question[1,2]+1
 for (i in 1:3) question[i]=0
 
-
 for (j in 1:nbuser){
+  if (df_without_hour$Type !='Friend'){
   for (i in user_id[j] :user_id[j+1]){
-    if (df_without_friend_mode[i,2]=='Week observation'){
-      question[j,1]=question[j,1]+1
+    if (df_without_hour$Type[i]=='Observation week'){
+      question$Week_observation[j]=question$Week_observation[j]+1
     }
-    
+    if (round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
+                                 units = c("days"))),0) < 7.0){
+      question$Week1[j]=question$Week1[j]+1
+    }
+    else if ((round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
+                                       units = c("days"))),0) >= 8.0) &&(
+      (round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
+                                 units = c("days"))),0) < 15.0))){
+      
+      question$Week2[j]=question$Week2[j]+1
+      }
   }
-    
+  }
+  
+  
 }
-df____test=df
-df____test <- as.data.table(df____test)
+
+question
+nrow(df_without_friend_mode)
+warnings()
