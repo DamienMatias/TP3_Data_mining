@@ -43,48 +43,25 @@ nrow(df_without_friend_mode) ##65006
 
 rownames(df_without_friend_mode) <- 1:nrow(df_without_friend_mode)  #index : 1,2,3 ...
 
-#observation_week = df_without_friend_mode[FALSE,]
-#week1 = df_without_friend_mode[FALSE,]
-#week2 = df_without_friend_mode[FALSE,]
-#for (i in 1 : nrow(df_without_friend_mode) ){
-#  if (round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
-#                                   units = c("days"))) ,0) <= 7.0 ){
-#    week1=rbind(week1,df_without_friend_mode[i,])
-#  }
-#  else if ((round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  ,
-#                                units = c("days")))  ,0) >= 8.0)
-#           &&(round(as.numeric(difftime(df_without_friend_mode$Time[i],min(df_without_friend_mode$Time)  , 
-#                                  units = c("days"))),0) < 15.0) )
-#    week2=rbind(week2,df_without_friend_mode[i,])
-#  if (df_without_friend_mode[i,2]=='Observation week' )
-#    observation_week=rbind(observation_week,df_without_friend_mode[i,])
-#}
-
-
 nbuser=nrow(unique(df_without_friend_mode[1])) #number of user = 32
 userid=unique(df_without_friend_mode[1]) ##the first new row id for each new us
 nbuser
 user_id=as.numeric(rownames(userid))
-user_id[2]
+user_id <- c(user_id, nrow(df_without_friend_mode))
+
 user_id
-
-nrow(df_without_friend_mode)
-
 
 min_date=unique(df_without_friend_mode %>% group_by(User) %>% top_n(-1, Time))
 min_date$Type=NULL
-max(df_without_friend_mode$Time)
+min_date
 
-ddply(min_date, .(User), head, n = 1) 
-
-
-
+min_date=ddply(min_date, .(User), head, n = 1) 
 question=setNames(data.frame(matrix(ncol = 3, nrow = nbuser)), c("Week_observation", "Week1", "Week2"))
 for (i in 1:3) question[i]=0
 
 for (j in 1:nbuser){
   
-  for (i in user_id[j] :user_id[j+1]){
+  for (i in user_id[j] : user_id[j+1]){
     if (df_without_hour$Type[i]=='Observation week'){
       question$Week_observation[j]=question$Week_observation[j]+1
     }
@@ -93,18 +70,18 @@ for (j in 1:nbuser){
       question$Week1[j]=question$Week1[j]+1
     }
     else if ((round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
-                                       units = c("days"))),0) >= 8.0) &&(
+                                       units = c("days"))),0) >= 7.0) &&(
       (round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
-                                 units = c("days"))),0) < 15.0))){
+                                 units = c("days"))),0) < 14.0))){
       
       question$Week2[j]=question$Week2[j]+1
       }
   }
-  
-  
-  
 }
 
 question
-nrow(df_without_friend_mode)
-warnings()
+
+round(as.numeric(difftime("2017-08-25","2017-08-12")),0) #différence de jour entre le min et le
+                                                         #le dernier jour de la deuxieme semaine
+round(as.numeric(difftime("2017-08-18","2017-08-12")),0)#différence de jour entre le min et le
+                                                        #le dernier jour de la première semaine 
