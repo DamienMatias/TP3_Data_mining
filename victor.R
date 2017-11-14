@@ -33,55 +33,49 @@ stat.mode(df$Type)
 
 #question percentage of improvement
 df_without_friend_mode=df_without_hour[FALSE,]
-df_without_friend_mode$Time <- as.Date(df_without_friend_mode$Time)
-for (i in 1 : nrow(df_without_hour) ){
-  if (df[i,2]!='Friend'){
-    df_without_friend_mode=rbind(df_without_friend_mode,df_without_hour[i,])
-  }
-}
+df_without_friend_mode <- df_without_hour[df_without_hour$Type!='Friend',] #not taking rows with friend
 nrow(df_without_friend_mode) ##65006
 
 rownames(df_without_friend_mode) <- 1:nrow(df_without_friend_mode)  #index : 1,2,3 ...
 
 nbuser=nrow(unique(df_without_friend_mode[1])) #number of user = 32
 userid=unique(df_without_friend_mode[1]) ##the first new row id for each new us
-nbuser
-user_id=as.numeric(rownames(userid))
-user_id <- c(user_id, nrow(df_without_friend_mode))
 
+user_id=as.numeric(rownames(userid))
+user_id <- c(user_id, nrow(df_without_friend_mode)) #add a line with the number of rows
 user_id
 
-min_date=unique(df_without_friend_mode %>% group_by(User) %>% top_n(-1, Time))
-min_date$Type=NULL
+min_date=unique(df_without_friend_mode %>% group_by(User) %>% top_n(-1, Time)) #get the first
+                                                                              # dat of activiry for   
+                                                                              #each user
+min_date$Type=NULL #delete the column about the type
+
+min_date=ddply(min_date, .(User), head, n = 1) #remove the duplicate
 min_date
+question=setNames(data.frame(matrix(ncol = 3, nrow = nbuser)), #dataframe for receiving the count of
+                  c("Week_observation", "Week1", "Week2"))    #week observation, week1 and week2
+for (i in 1:3) question[i]=0 #fill it with 0
+question
 
-min_date=ddply(min_date, .(User), head, n = 1) 
-question=setNames(data.frame(matrix(ncol = 3, nrow = nbuser)), c("Week_observation", "Week1", "Week2"))
-for (i in 1:3) question[i]=0
-
-for (j in 1:nbuser){
+for (j in 1:nbuser){ #for each user
   
-  for (i in user_id[j] : user_id[j+1]){
+  for (i in user_id[j] : user_id[j+1]){ #for each user we get over the rows associate to this user
+    
     if (df_without_hour$Type[i]=='Observation week'){
-      question$Week_observation[j]=question$Week_observation[j]+1
+      question$Week_observation[j]=question$Week_observation[j]+1 #+1 for observation week column
     }
     if (round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
                                  units = c("days"))),0) < 7.0){
-      question$Week1[j]=question$Week1[j]+1
+      question$Week1[j]=question$Week1[j]+1        #+1 for week1 column
     }
     else if ((round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
                                        units = c("days"))),0) >= 7.0) &&(
       (round(as.numeric(difftime(df_without_hour$Time[i],min_date$Time[j]  ,
                                  units = c("days"))),0) < 14.0))){
       
-      question$Week2[j]=question$Week2[j]+1
+      question$Week2[j]=question$Week2[j]+1 #+1 for week2 column
       }
   }
 }
 
 question
-
-round(as.numeric(difftime("2017-08-25","2017-08-12")),0) #différence de jour entre le min et le
-                                                         #le dernier jour de la deuxieme semaine
-round(as.numeric(difftime("2017-08-18","2017-08-12")),0)#différence de jour entre le min et le
-                                                        #le dernier jour de la première semaine 
